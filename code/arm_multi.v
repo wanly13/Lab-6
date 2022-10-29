@@ -301,7 +301,8 @@ module mainfsm (
 	localparam [3:0] DECODE = 1;
 	localparam [3:0] EXECUTEI = 7;
 	localparam [3:0] EXECUTER = 6;
-	localparam [3:0] MEMADR = 2;
+	localparam [3:0] MEMADR = 2; // MemAdr
+	
 	localparam [3:0] UNKNOWN = 10;
 
 	// state register
@@ -323,19 +324,42 @@ module mainfsm (
 			DECODE:
 				case (Op)
 					2'b00:
-						if (Funct[5])
+						if (Funct[5] == 1)
 							nextstate = EXECUTEI;
 						else
 							nextstate = EXECUTER;
 					2'b01: nextstate = MEMADR;
 					2'b10: nextstate = BRANCH;
-					default: nextstate = UNKNOWN;
+					default: nextstate = UNKNOWN; // por que desconocido???
 				endcase
 			EXECUTER:
+				nextstate = ALUWB;
+
 			EXECUTEI:
-			
+				nextstate = ALUWB;
+
 			MEMADR:
+				case (Funct[0] == 0)
+					1'b0: 
+						nextstate = MEMWR;
+					1'b1:
+						nextstate = MEMRD;
+
+			BRANCH: 
+				nextstate = FETCH;
+
 			MEMRD:
+				nextstate = MEMWB;
+
+			MEMWR:
+				nextstate = FETCH;
+
+			ALUWB:
+				nextstate = FETCH;
+
+			MEMWB:
+				nextstate = FETCH;
+
 			default: nextstate = FETCH;
 		endcase
 
